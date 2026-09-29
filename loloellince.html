@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Aventura de Lolo el Lince</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background-color: #E0F2FE; 
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #0F172A;
+        }
+        .btn-dua {
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-dua:active {
+            transform: translateY(6px);
+            box-shadow: none !important;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <main class="w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-8 md:p-12 border-8 border-green-500 text-center">
+        <!-- Contenedor dinámico de la historia -->
+        <div id="story-container" class="fade-in">
+            <!-- El contenido se inyecta por JavaScript -->
+        </div>
+    </main>
+
+    <script>
+        // Configuración de Sonidos (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'click') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'success') {
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'error') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // Fases de la historia
+        const historia = {
+            fase1: {
+                titulo: "Fase 1: El Inicio 🌲",
+                texto: "Este es Lolo 🐆. Es un lince ibérico que vive feliz en un bosque lleno de árboles y animales. Hoy ha salido a dar un paseo.",
+                emoji: "🐆🌳",
+                botones: [
+                    { texto: "Empezar el paseo 🐾", destino: "fase2", sonido: "click", color: "bg-green-400 border-green-600 hover:bg-green-300" }
+                ]
+            },
+            fase2: {
+                titulo: "Fase 2: Un gran problema 🗑️",
+                texto: "¡Oh no! Lolo llega a su río favorito y lo encuentra lleno de basura plástica humana. El agua está sucia.",
+                emoji: "😭🥤",
+                botones: [
+                    { texto: "Opción A: Limpiarla y reciclarla 🧤", destino: "fase3_limpiar", sonido: "success", color: "bg-blue-400 border-blue-600 hover:bg-blue-300" },
+                    { texto: "Opción B: Ignorarla y seguir 🙈", destino: "fase3_ignorar", sonido: "error", color: "bg-red-400 border-red-600 hover:bg-red-300" }
+                ]
+            },
+            fase3_limpiar: {
+                titulo: "Fase 3: ¡Manos a la obra! ✨",
+                texto: "Lolo y sus amigos recogen la basura. El río vuelve a brillar y los peces saltan de alegría. ¡Qué buena decisión!",
+                emoji: "🐟💖",
+                botones: [
+                    { texto: "Siguiente paso ➡️", destino: "fase4", sonido: "click", color: "bg-yellow-400 border-yellow-600 hover:bg-yellow-300" }
+                ]
+            },
+            fase3_ignorar: {
+                titulo: "Fase 3: ¡Ups, algo huele mal! 🤢",
+                texto: "Al ignorar la basura, el río se contamina más. Lolo no puede beber agua y tiene mucha sed. Decide volver y arreglarlo.",
+                emoji: "🏜️💧",
+                botones: [
+                    { texto: "Volver a limpiar 🔄", destino: "fase3_limpiar", sonido: "click", color: "bg-orange-400 border-orange-600 hover:bg-orange-300" }
+                ]
+            },
+            fase4: {
+                titulo: "Fase 4: Consumo Responsable ♻️",
+                texto: "Lolo tiene en sus patas unas botellas de plástico que recogió. ¿En qué contenedor debe tirarlas para proteger la tierra?",
+                emoji: "🤔🚯",
+                botones: [
+                    { texto: "Contenedor Amarillo 🟡", destino: "fase5_feliz", sonido: "success", color: "bg-yellow-400 border-yellow-600 hover:bg-yellow-300" },
+                    { texto: "Contenedor Azul 🔵", destino: "fase5_error", sonido: "error", color: "bg-blue-400 border-blue-600 hover:bg-blue-300" }
+                ]
+            },
+            fase5_feliz: {
+                titulo: "Fase 5: ¡Misión Cumplida! 🌍",
+                texto: "¡Excelente! Al reciclar correctamente, ayudamos a no fabricar tanto plástico. Lolo el lince salva su hogar y a todos los animales del bosque.",
+                emoji: "🏆🐆",
+                botones: [
+                    { texto: "Volver a jugar 🔄", destino: "fase1", sonido: "click", color: "bg-emerald-400 border-emerald-600 hover:bg-emerald-300" }
+                ]
+            },
+            fase5_error: {
+                titulo: "Fase 5: Casi lo logramos 😅",
+                texto: "El azul es para papel y cartón. El plástico va al amarillo. ¡No pasa nada, aprendemos de los errores! Inténtalo de nuevo.",
+                emoji: "📚💡",
+                botones: [
+                    { texto: "Intentarlo otra vez 🔄", destino: "fase4", sonido: "click", color: "bg-orange-400 border-orange-600 hover:bg-orange-300" }
+                ]
+            }
+        };
+
+        const storyContainer = document.getElementById('story-container');
+
+        function renderizarFase(idFase) {
+            const fase = historia[idFase];
+            
+            // Reiniciar animación DUA
+            storyContainer.classList.remove('fade-in');
+            void storyContainer.offsetWidth; 
+            storyContainer.classList.add('fade-in');
+
+            // Generar botones
+            const botonesHTML = fase.botones.map(btn => `
+                <button onclick="irAFase('${btn.destino}', '${btn.sonido}')" 
+                        class="btn-dua w-full md:w-auto text-3xl md:text-4xl font-extrabold py-6 px-10 rounded-2xl border-b-8 text-slate-900 shadow-lg ${btn.color} focus:outline-none focus:ring-8 focus:ring-slate-400 mb-4 md:mb-0 md:mr-4">
+                    ${btn.texto}
+                </button>
+            `).join('');
+
+            storyContainer.innerHTML = `
+                <h1 class="text-3xl md:text-5xl font-black mb-6 text-slate-800 bg-slate-100 py-3 rounded-2xl border-4 border-slate-300">
+                    ${fase.titulo}
+                </h1>
+                <div class="text-7xl md:text-9xl mb-8 animate-bounce">${fase.emoji}</div>
+                <p class="text-4xl md:text-5xl font-bold mb-12 leading-relaxed text-slate-700">
+                    ${fase.texto}
+                </p>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                    ${botonesHTML}
+                </div>
+            `;
+        }
+
+        function irAFase(destino, sonido) {
+            playSound(sonido);
+            renderizarFase(destino);
+        }
+
+        // Iniciar el juego
+        renderizarFase('fase1');
+    </script>
+</body>
+</html>
